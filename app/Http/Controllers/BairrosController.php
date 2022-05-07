@@ -13,26 +13,49 @@ class BairrosController extends Controller
     {
         $data = Bairros::all()->toArray();
 
-        $data = json_encode($this->setCoordinates($data));
+        return $data;
+    }
+
+    public function import(Request $request)
+    {
+        $data = $request->all();
+
+        $path = $request->file('file')->getRealPath();
+        $records = array_map('str_getcsv', file($path));
+
+        if (! count($records) > 0) {
+           return 'Error...';
+        }
+
+        $entry = [];
+        
+        foreach ($records as $item){
+
+            $dados;
+            $dados['nome'] = $item[0]; 
+            $dados['idCidade'] = 1;
+
+            array_push($entry, $dados);
+    
+        }
+
+        Bairros::insert($entry);
+    }
+
+    public function indexGeoJson()
+    {
+        $data = Bairros::all()->toArray();
+
+        $data = json_encode($this->setGeoJson($data));
 
         return $data;
     }
 
     public function setCoordinates($data){
-        
-        $dataObj = new stdClass();
-        $itemFeature = [];
 
-        foreach ($data as $dataItem){
+        $geometry = new stdClass();
 
-            $properties = new stdClass();
-            $features = new stdClass();
-            $geometry = new stdClass();
-
-            $properties->Bairro = $dataItem['nome'];
-            $properties->Casos = '';
-
-            $coord = explode(',', $dataItem['coordenadas']);
+        $coord = explode(',', $data);
             $item = [];
             $coodArray = [];
             $i = 0;
@@ -46,19 +69,35 @@ class BairrosController extends Controller
                 $i++;
             }
 
-            $geometry->type = 'Polygon';
-            $geometry->coordinates = [$coodArray];
+        $geometry->type = 'Polygon';
+        $geometry->coordinates = [$coodArray];
+
+        return $geometry;
+
+    }
+    
+    public function setGeoJson($data){
+        
+        $dataObj = new stdClass();
+        $itemFeature = [];
+
+        foreach ($data as $dataItem){
+
+            $properties = new stdClass();
+            $features = new stdClass();
+
+            $properties->Bairro = $dataItem['nome'];
+            $properties->Casos = '';
 
             $features->type = "Feature";
             $features->properties = $properties;
-            $features->geometry = $geometry;
+
+            $features->geometry = $this->setCoordinates($dataItem['coordenadas']);
 
             array_push($itemFeature,  $features);
 
             unset($properties);
             unset($features);
-            unset($geometry);
-
         }
 
         $dataObj->type = "FeatureCollection";

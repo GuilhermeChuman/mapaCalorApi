@@ -17,8 +17,13 @@ return new class extends Migration
             $table->bigIncrements('id'); 
                  
             $table->date('dataOcorrencia');
-            $table->integer('idBairro')->unsigned();
+            $table->integer('idade');
+            $table->string('resultado', 100);
+
+            $table->unsignedBigInteger('idBairro');
             $table->foreign('idBairro')->references('id')->on('bairros');
+
+            $table->engine = 'InnoDB';
         });
     }
 

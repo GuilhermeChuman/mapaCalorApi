@@ -17,6 +17,7 @@ return new class extends Migration
             $table->bigIncrements('id');
             $table->string('nome', 100);
             $table->longText('coordenadas');
+            $table->engine = 'InnoDB';
         });
     }
 

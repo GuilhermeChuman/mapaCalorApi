@@ -18,8 +18,10 @@ return new class extends Migration
             $table->string('nome', 100);
             $table->longText('coordenadas');
 
-            $table->integer('idCidade')->unsigned();
+            $table->unsignedBigInteger('idCidade');
             $table->foreign('idCidade')->references('id')->on('cidades');
+
+            $table->engine = 'InnoDB';
         });
     }
 
