@@ -61,16 +61,20 @@ class CasosController extends Controller
         return $data;
     }
 
-    public function periodGeoJson($dataAnterior, $dataAtual){
+    public function getCasosPeriod($dataAnterior, $dataAtual){
 
-        $data = DB::table('casos')
-            ->join('bairros', 'casos.idBairro', '=', 'bairros.id')
-            ->select(DB::raw('count(*) as nCasos, bairros.nome'))
+        $data1 = DB::table('bairros')
+            ->leftJoin('casos', 'casos.idBairro', '=', 'bairros.id')
+            ->select(DB::raw('IFNULL( casos.id, 0) as nCasos, bairros.nome, bairros.coordenadas'))
+            ->whereNull('dataOcorrencia');
+        
+        $data2 = DB::table('casos')
+            ->leftJoin('bairros', 'casos.idBairro', '=', 'bairros.id')
+            ->select(DB::raw('count(*) as nCasos, bairros.nome, bairros.coordenadas'))
             ->whereBetween('dataOcorrencia', [$dataAnterior, $dataAtual])
-            ->groupBy('bairros.nome')
-            ->get();
+            ->groupBy('bairros.nome','bairros.coordenadas')->union($data1)->get();
 
-        return $data;
+        return $data2;
     }
 
     public function casosNoMesGeoJson(){
@@ -79,7 +83,20 @@ class CasosController extends Controller
         $dataAnterior = strtotime('-1 month', strtotime($dataAtual));
         $dataAnterior = date("Y-m-d", $dataAnterior);
 
-        $data = $this->periodGeoJson($dataAnterior, $dataAtual);
+        $data = $this->getCasosPeriod($dataAnterior, $dataAtual);
+
+        $data = $this->setGeoJson($data);
+
+        return json_encode($data);
+    }
+
+    public function casosNoMes(){
+
+        $dataAtual = date("Y-m-d");
+        $dataAnterior = strtotime('-1 month', strtotime($dataAtual));
+        $dataAnterior = date("Y-m-d", $dataAnterior);
+
+        $data = $this->getCasosPeriod($dataAnterior, $dataAtual);
 
         return $data;
     }

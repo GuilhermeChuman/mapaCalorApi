@@ -27,7 +27,8 @@ Route::post('bairros/import', 'App\Http\Controllers\BairrosController@import');
 //Casos
 Route::get('casos', 'App\Http\Controllers\CasosController@index');
 Route::get('casosByBairro', 'App\Http\Controllers\CasosController@casosByBairro');
-Route::get('casosNoMes', 'App\Http\Controllers\CasosController@casosNoMesGeoJson');
+Route::get('casosNoMes', 'App\Http\Controllers\CasosController@casosNoMes');
+Route::get('casosNoMes/GeoJson', 'App\Http\Controllers\CasosController@casosNoMesGeoJson');
 Route::get('casosByBairro/GeoJson', 'App\Http\Controllers\CasosController@casosByBairroGeoJson');
 Route::post('importCasos', 'App\Http\Controllers\CasosController@importCasos');
 
