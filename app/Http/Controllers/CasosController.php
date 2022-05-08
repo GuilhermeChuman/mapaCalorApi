@@ -61,6 +61,52 @@ class CasosController extends Controller
         return $data;
     }
 
+    public function casosByMes()
+    {
+        $ano = date('Y');
+
+        $data = DB::table(DB::raw("(Select * from
+                                    casos
+                                    where dataOcorrencia between '".$ano."-01-01' and '".$ano."-12-31'
+                                    and resultado = 'POSITIVO') as casos2022"))
+            ->select(DB::raw(' Month(casos2022.dataOcorrencia) as Mes, count(Month(casos2022.dataOcorrencia)) as nCasos'))
+            ->groupBy(DB::raw("month(casos2022.dataOcorrencia)"))
+            ->get();
+
+        return $data;
+    }
+
+    public function casosByIdade()
+    {
+        $ano = date('Y');
+
+        $data = DB::table(DB::raw("(Select * from
+                                    casos
+                                    where dataOcorrencia between '".$ano."-01-01' and '".$ano."-12-31'
+                                    and resultado = 'POSITIVO') as casos2022"))
+            ->select(DB::raw('casos2022.idade as Idade, count(casos2022.idade) as nCasos'))
+            ->groupBy(DB::raw("casos2022.idade"))
+            ->get();
+
+        return $data;
+    }
+
+    public function getCasosPeriodSemCoordenada($dataAnterior, $dataAtual){
+
+        $data1 = DB::table('bairros')
+            ->leftJoin('casos', 'casos.idBairro', '=', 'bairros.id')
+            ->select(DB::raw('IFNULL( casos.id, 0) as nCasos, bairros.nome'))
+            ->whereNull('dataOcorrencia');
+        
+        $data2 = DB::table('casos')
+            ->leftJoin('bairros', 'casos.idBairro', '=', 'bairros.id')
+            ->select(DB::raw('count(*) as nCasos, bairros.nome'))
+            ->whereBetween('dataOcorrencia', [$dataAnterior, $dataAtual])
+            ->groupBy('bairros.nome')->union($data1)->get();
+
+        return $data2;
+    }
+
     public function getCasosPeriod($dataAnterior, $dataAtual){
 
         $data1 = DB::table('bairros')
@@ -96,7 +142,7 @@ class CasosController extends Controller
         $dataAnterior = strtotime('-1 month', strtotime($dataAtual));
         $dataAnterior = date("Y-m-d", $dataAnterior);
 
-        $data = $this->getCasosPeriod($dataAnterior, $dataAtual);
+        $data = $this->getCasosPeriodSemCoordenada($dataAnterior, $dataAtual);
 
         return $data;
     }
