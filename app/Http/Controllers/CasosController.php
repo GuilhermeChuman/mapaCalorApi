@@ -117,6 +117,7 @@ class CasosController extends Controller
         $data2 = DB::table('casos')
             ->leftJoin('bairros', 'casos.idBairro', '=', 'bairros.id')
             ->select(DB::raw('count(*) as nCasos, bairros.nome, bairros.coordenadas'))
+            ->where('resultado','=','POSITIVO')
             ->whereBetween('dataOcorrencia', [$dataAnterior, $dataAtual])
             ->groupBy('bairros.nome','bairros.coordenadas')->union($data1)->get();
 
