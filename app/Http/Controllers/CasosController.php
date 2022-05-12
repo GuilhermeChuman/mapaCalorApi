@@ -93,35 +93,32 @@ class CasosController extends Controller
 
     public function getCasosPeriodSemCoordenada($dataAnterior, $dataAtual){
 
-        $data1 = DB::table('bairros')
-            ->leftJoin('casos', 'casos.idBairro', '=', 'bairros.id')
-            ->select(DB::raw('IFNULL( casos.id, 0) as nCasos, bairros.nome'))
-            ->whereNull('dataOcorrencia');
-        
-        $data2 = DB::table('casos')
-            ->leftJoin('bairros', 'casos.idBairro', '=', 'bairros.id')
-            ->select(DB::raw('count(*) as nCasos, bairros.nome'))
-            ->whereBetween('dataOcorrencia', [$dataAnterior, $dataAtual])
-            ->groupBy('bairros.nome')->union($data1)->get();
+        $data1 = Casos::rightJoin('bairros',function($join) use ($dataAnterior, $dataAtual){
+                                $join->on('casos.idBairro', '=', 'bairros.id');
+                                $join->on('casos.resultado','=',DB::raw('"POSITIVO"'));
+                                $join->whereBetween('dataOcorrencia', [$dataAnterior, $dataAtual]);
+                            }
+                        )
+            ->select(DB::raw('count(casos.id) as nCasos, bairros.nome'))
+            ->groupBy('bairros.nome')
+            ->get();
 
-        return $data2;
+        return $data1;
     }
 
     public function getCasosPeriod($dataAnterior, $dataAtual){
 
-        $data1 = DB::table('bairros')
-            ->leftJoin('casos', 'casos.idBairro', '=', 'bairros.id')
-            ->select(DB::raw('IFNULL( casos.id, 0) as nCasos, bairros.nome, bairros.coordenadas'))
-            ->whereNull('dataOcorrencia');
+        $data1 = Casos::rightJoin('bairros',function($join) use ($dataAnterior, $dataAtual){
+                                $join->on('casos.idBairro', '=', 'bairros.id');
+                                $join->on('casos.resultado','=',DB::raw('"POSITIVO"'));
+                                $join->whereBetween('dataOcorrencia', [$dataAnterior, $dataAtual]);
+                            }
+                        )
+                        ->select(DB::raw('count(casos.id) as nCasos, bairros.nome, bairros.coordenadas'))
+                        ->groupBy('bairros.nome','bairros.coordenadas')
+                        ->get();
         
-        $data2 = DB::table('casos')
-            ->leftJoin('bairros', 'casos.idBairro', '=', 'bairros.id')
-            ->select(DB::raw('count(*) as nCasos, bairros.nome, bairros.coordenadas'))
-            ->where('resultado','=','POSITIVO')
-            ->whereBetween('dataOcorrencia', [$dataAnterior, $dataAtual])
-            ->groupBy('bairros.nome','bairros.coordenadas')->union($data1)->get();
-
-        return $data2;
+        return $data1;
     }
 
     public function casosNoMesGeoJson(){
