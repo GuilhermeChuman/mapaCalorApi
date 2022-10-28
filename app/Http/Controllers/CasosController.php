@@ -41,7 +41,7 @@ class CasosController extends Controller
             $dados['dataOcorrencia'] = $item[4]; 
             $dados['idBairro'] = $item[8];
             $dados['idade'] = $item[0];
-            $dados['resultado'] = $item[7];
+            $dados['resultado'] = strval($item[7]);
 
             array_push($entry, $dados);
     

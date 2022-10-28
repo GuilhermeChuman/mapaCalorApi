@@ -37,6 +37,12 @@ Route::post('importCasos', 'App\Http\Controllers\CasosController@importCasos');
 //Cidades
 Route::get('cidades', 'App\Http\Controllers\CidadesController@index');
 
+//Mensagens
+Route::get('mensagens', 'App\Http\Controllers\MensagensController@index');
+Route::get('mensagensAproved', 'App\Http\Controllers\MensagensController@getAproved');
+Route::get('mensagensNonAproved', 'App\Http\Controllers\MensagensController@getNonAproved');
+Route::get('mensagensAprove/{id}', 'App\Http\Controllers\MensagensController@aprove');
+
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
